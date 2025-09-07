@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../mobile.js"></script>
+    <script src="../theme.js"></script>
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: Montserrat;
+            src: url(../resources/Montserrat-VariableFont_wght.ttf) format("truetype-variations");
+            font-style: normal;
+            font-weight: 100 900;
+        }
+        @font-face {
+            font-family: Montserrat;
+            src: url(../resources/Montserrat-VariableFont_wght.ttf) format("truetype-variations");
+            font-style: italic;
+            font-weight: 100 900;
+        }
+        html {
+            --bg-dark: hsl(0, 0%, 85%);
+            --bg-mid: hsl(0, 0%, 90%);
+            --bg-light: hsl(0, 0%, 95%);
+            --txt: hsl(0, 0%, 5%);
+            --txt-muted: hsl(0, 0%, 35%);
+            --accent-h: 40;
+            --accent: hsl(var(--accent-h), 100%, 50%);
+            --border: hsl(0, 0%, 80%);
+            --border-select: hsl(var(--accent-h), 100%, 50%);
+            --cursor: hsl(0, 0%, 40%);
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--txt);
+            margin: 0;
+            overflow: hidden;
+            font-family: Montserrat, Verdana, Geneva, Tahoma, sans-serif;
+        }
+        .container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            transition: height 0.3s;
+        }
+        .keyboard .container {
+            height: calc(100vh - 25rem);
+        }
+        .vertical {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-mid);
+            padding: 2rem;
+            box-shadow: 0 0.8rem 1.4rem #0002, 0 0.4rem 0.8rem #0004;
+            border-radius: 1.6rem;
+        }
+        .block {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .mobile .block {
+            flex-direction: column;
+            align-items: center;
+        }
+        img {
+            width: 2.4rem;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-drag: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            transition: transform 0.3s;
+        }
+        .mobile #input-arrow {
+            display: none;
+        }
+        html:not(.mobile) #input-arrow-mobile {
+            display: none;
+        }
+        .input {
+            position: relative;
+            background-color: var(--bg-light);
+            font-family: monospace;
+            font-size: 1.6rem;
+            height: 2.6rem;
+            font-weight: 700;
+            border-radius: 0.6rem;
+            padding-inline: 0.6rem;
+            border: 0.15rem var(--border) solid;
+            box-shadow: 0 0.6rem 1rem #0002, 0 0.2rem 0.4rem #0004, inset 0 0.2rem 0.4rem #0002, inset 0 0.1rem 0.2rem #0004;
+            transition: border 0.2s;
+            width: calc((var(--char-amount) + var(--label-chars)) * 1ch + 0.4rem);
+            transition: width 0.3s;
+        }
+        .mobile .input {
+            width: calc(100vw - 6rem);
+        }
+        .input .text {
+            padding-inline: 0.6rem;
+            position: absolute;
+            left: 0;
+            top: 0.4rem;
+            /* text-shadow: 0 0.2rem 0.4rem #0004, 0 0.04rem 0.16rem #0008; */
+        }
+        .input .type {
+            padding-inline: 0.6rem;
+            position: absolute;
+            right: 0;
+            top: 0.4rem;
+            color: var(--txt-muted);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .input .cursor {
+            position: absolute;
+            left: calc(0.52rem + (var(--cursor-position) * 1ch));
+            border-radius: 1rem;
+            top: 0.2rem;
+            width: 0.16rem;
+            height: 2.2rem;
+            background-color: var(--cursor);
+            color: var(--txt-muted);
+            display: none;
+            transition: left 0.08s;
+        }
+        .input.selected {
+            border: 0.15rem var(--border-select) solid;
+        }
+        .input.selected .text {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .input.selected .cursor {
+            display: block;
+        }
+        .block[data-convert="mp"]>#field-mp:not(.selected) {
+            cursor: pointer;
+        }
+        .block[data-convert="stats"]>#field-stats:not(.selected) {
+            cursor: pointer;
+        }
+        .vertical>span {
+            font-weight: 700;
+            line-height: 0.8rem;
+            font-size: 1rem;
+            height: 0rem;
+            width: 20rem;
+            overflow: hidden;
+            color: var(--txt-muted);
+            transition: height 0.3s, margin-top 0.3s;
+        }
+        .mobile .vertical>span {
+            width: calc(100vw - 6rem);
+        }
+        .vertical>span.enabled {
+            height: 1.6rem;
+            margin-top: 0.2rem;
+        }
+        #mobile-dialog {
+            display: flex;
+            flex-direction: row;
+            justify-content: end;
+        }
+        html:not(.mobile) #mobile-dialog {
+            display: none;
+        }
+        #mobile-dialog>div {
+            background-color: var(--accent);
+            color: hsl(var(--accent-h), 100%, 95%);
+            font-weight: 700;
+            padding-block: 0.6rem;
+            padding-inline: 1rem;
+            border-radius: 0.6rem;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            box-shadow: 0 0.6rem 1rem #0002, 0 0.2rem 0.4rem #0004;
+        }
+        #keyboard {
+            position: fixed;
+            bottom: -25rem;
+            height: 23rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            align-content: start;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            background-color: var(--bg-mid);
+            transition: bottom 0.3s;
+        }
+        .keyboard #keyboard {
+            position: fixed;
+            bottom: -2rem;
+            height: 25rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            align-content: start;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            background-color: var(--bg-mid);
+        }
+        #keyboard>div {
+            width: calc((100vw - 3.2rem) / 3);
+            height: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: 700;
+            background-color: var(--bg-light);
+            border-radius: 0.4rem;
+            box-shadow: 0 0.6rem 1rem #0002, 0 0.2rem 0.4rem #0004;
+            transition: background-color 0.2s;
+        }
+        #keyboard>div.locked {
+            background-color: var(--bg-dark);
+        }
+        #keyboard>.arrows {
+            width: calc((100vw - 2.6rem) / 2);
+            height: 3rem;
+            display: flex;
+            gap: 0.2rem;
+            justify-content: space-evenly;
+            padding-inline: 0.2rem;
+            box-sizing: border-box;
+        }
+        #keyboard>#enter {
+            background-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="vertical">
+            <div class="block" data-convert="mp">
+                <div class="input" id="field-mp" style="--cursor-position: 0; --char-amount: 4; --label-chars: 2;"><div class="text"></div><div class="type">MP</div><div class="cursor"></div></div>
+                <img src="../resources/arrow-right-solid-full.svg" alt="" id="input-arrow">
+                <img src="../resources/arrow-down-solid-full.svg" alt="" id="input-arrow-mobile">
+                <div class="input" id="field-stats" style="--cursor-position: 0; --char-amount: 6; --label-chars: 5;"><div class="text">0</div><div class="type">Stat*</div><div class="cursor"></div></div>
+            </div>
+            <span>NOTE: As of June 2025 the max MP is 1859MP.</span>
+            <div id="mobile-dialog">
+                <div>Convert</div>
+            </div>
+        </div>
+    </div>
+    <div id="keyboard">
+        <div class="arrows locked" id="left"><img src="../resources/arrow-left-solid-full.svg" alt="LEFT"></div>
+        <div class="arrows locked" id="right"><img src="../resources/arrow-right-solid-full.svg" alt="RIGHT"></div>
+        <div id="1">1</div>
+        <div id="2">2</div>
+        <div id="3">3</div>
+        <div id="4">4</div>
+        <div id="5">5</div>
+        <div id="6">6</div>
+        <div id="7">7</div>
+        <div id="8">8</div>
+        <div id="9">9</div>
+        <div id="backspace" class="locked"><img src="../resources/delete.svg" alt="Backspace"></div>
+        <div id="zero" class="locked">0</div>
+        <div id="enter"><img src="../resources/corner-down-left.svg" alt="Enter"></div>
+    </div>
+    <script>
+        Number.prototype.roundTo = function(decimals) {
+            const factor = 10 ** decimals;
+            return Math.round(this * factor) / factor;
+        };
+
+        function calculateStatsMultiplier(MP) {
+            // <!-- 29.97(ln(0.0019x+1))^1.2 -->
+            return ((Math.log((0.0019 * MP) + 1)) ** 1.2) * 29.97;
+        }
+
+        function calculateMP(Stats) {
+            // <!-- (exp(1.2-root(Stats/29.97))-1)/0.0019 -->
+            return (Math.exp((Stats/29.97) ** (1 / 1.2)) - 1) / 0.0019;
+        }
+
+        Array.from(document.querySelectorAll(".block>img")).forEach(image => {
+            image.addEventListener("click", () => {
+                if (document.querySelector(".block").dataset.convert == "mp") {
+                    document.querySelector(".block").dataset.convert = "stats";
+                    document.querySelector("#field-mp>.text").innerText = "0";
+                    document.querySelector("#field-stats>.text").innerText = "";
+                    document.getElementById("field-stats").style.setProperty("--cursor-position", 0);
+                    image.style.transform = "rotate(-180deg)";
+                    document.getElementById("field-stats").style.setProperty("--char-amount", 2);
+                } else if (document.querySelector(".block").dataset.convert == "stats") {
+                    document.querySelector(".block").dataset.convert = "mp";
+                    document.querySelector("#field-stats>.text").innerText = "0";
+                    document.querySelector("#field-mp>.text").innerText = "";
+                    document.getElementById("field-mp").style.setProperty("--cursor-position", 0);
+                    image.style.transform = "rotate(0deg)";
+                    document.getElementById("field-stats").style.setProperty("--char-amount", 6);
+                    document.querySelector(".vertical>span").classList.remove("enabled");
+                }
+                document.getElementById("field-mp").classList.remove("selected");
+                document.getElementById("field-stats").classList.remove("selected");
+                Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #zero)")).forEach((key) => {key.classList.remove("locked")});
+                Array.from(document.querySelectorAll("#keyboard>div:is(#left, #right, #backspace, #zero)")).forEach((key) => {key.classList.add("locked")});
+            });
+        });
+
+        Array.from(document.querySelectorAll("#keyboard>div:not(#arrows)")).forEach((button) => {
+            button.addEventListener("click", () => {
+                let inputElement;
+                let input;
+                let output
+                if (document.querySelector(".block").dataset.convert == "mp") {
+                    inputElement = document.getElementById("field-mp");
+                    input = document.querySelector("#field-mp>.text");
+                    output = document.querySelector("#field-stats>.text");
+                }
+                if (document.querySelector(".block").dataset.convert == "stats") {
+                    inputElement = document.getElementById("field-stats");
+                    input = document.querySelector("#field-stats>.text");
+                    output = document.querySelector("#field-mp>.text");
+                }
+                let inputMaxChars = parseInt(inputElement.style.getPropertyValue("--char-amount"));
+                let cursorPosition = parseInt(inputElement.style.getPropertyValue("--cursor-position"));
+                if (button.id == "zero") {
+                    if (input.innerText != "" && input.innerText.length < inputMaxChars) {
+                        input.innerText = input.innerText.slice(0, cursorPosition) + "0" + input.innerText.slice(cursorPosition);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                } else if (button.id == "enter") {
+                    if (document.querySelector(".block").dataset.convert == "mp") {
+                        let statMult = calculateStatsMultiplier(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                        console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)} Magical Power -> ${statMult}x Stats Multiplier`);
+                        output.innerText = statMult.roundTo(2);
+                    }
+                    if (document.querySelector(".block").dataset.convert == "stats") {
+                        let MP = calculateMP(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                        console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)}x Stats Multiplier -> ${MP} Magical Power`);
+                        output.innerText = Math.ceil(MP);
+                        if (Math.ceil(MP) > 1859) {
+                            document.querySelector(".vertical>span").classList.add("enabled");
+                        } else {
+                            document.querySelector(".vertical>span").classList.remove("enabled");
+                        }
+                    }
+                } else if (button.id == "backspace") {
+                    if (cursorPosition != 0) {
+                        input.innerText = input.innerText.slice(0, cursorPosition - 1) + input.innerText.slice(cursorPosition, input.innerText.length);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition-1);
+                    }
+                } else if (button.id == "left") {
+                    if (cursorPosition > 0) {
+                        inputElement.style.setProperty("--cursor-position", cursorPosition-1);
+                    }
+                } else if (button.id == "right") {
+                    if (cursorPosition < inputMaxChars && cursorPosition < input.innerText.length) {
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                } else {
+                    if (input.innerText.length < inputMaxChars) {
+                        input.innerText = input.innerText.slice(0, cursorPosition) + button.id + input.innerText.slice(cursorPosition);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                }
+                cursorPosition = parseInt(inputElement.style.getPropertyValue("--cursor-position"));
+                if (cursorPosition == 0) {
+                    document.querySelector("#keyboard>#backspace").classList.add("locked");
+                    document.querySelector("#keyboard>#zero").classList.add("locked");
+                    document.querySelector("#keyboard>#left").classList.add("locked");
+                } else {
+                    document.querySelector("#keyboard>#backspace").classList.remove("locked");
+                    document.querySelector("#keyboard>#zero").classList.remove("locked");
+                    document.querySelector("#keyboard>#left").classList.remove("locked");
+                }
+                if (input.innerText.length >= inputMaxChars) {
+                    Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #enter)")).forEach((key) => {key.classList.add("locked")});
+                } else {
+                    Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #enter, #zero)")).forEach((key) => {key.classList.remove("locked")});
+                }
+                if (cursorPosition == input.innerText.length) {
+                    console.log(cursorPosition)
+                    console.log(input.innerText.length)
+                    document.querySelector("#keyboard>#right").classList.add("locked");
+                } else {
+                    console.log(cursorPosition)
+                    console.log(input.innerText.length)
+                    document.querySelector("#keyboard>#right").classList.remove("locked");
+                }
+            });
+        });
+
+        document.querySelector(".container").addEventListener("click", () => {
+            document.getElementById("field-mp").classList.remove("selected");
+            document.getElementById("field-stats").classList.remove("selected");
+            document.body.classList.remove("keyboard");
+        });
+
+        document.getElementById("field-mp").addEventListener("click", (event) => {
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            if (!document.getElementById("field-mp").classList.contains("selected") && document.querySelector(".block").dataset.convert == "mp") {
+                document.getElementById("field-mp").style.setProperty("--cursor-position", document.querySelector("#field-mp>.text").innerText.length);
+                document.getElementById("field-mp").classList.add("selected");
+                if (document.documentElement.classList.contains("mobile")) {
+                    document.body.classList.add("keyboard");
+                }
+            }
+        });
+
+        document.getElementById("field-stats").addEventListener("click", (event) => {
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            if (!document.getElementById("field-stats").classList.contains("selected") && document.querySelector(".block").dataset.convert == "stats") {
+                document.getElementById("field-stats").style.setProperty("--cursor-position", document.querySelector("#field-stats>.text").innerText.length);
+                document.getElementById("field-stats").classList.add("selected");
+                if (document.documentElement.classList.contains("mobile")) {
+                    document.body.classList.add("keyboard");
+                }
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            let inputElement;
+            let input;
+            let output
+            if (document.querySelector(".block").dataset.convert == "mp") {
+                inputElement = document.getElementById("field-mp");
+                input = document.querySelector("#field-mp>.text");
+                output = document.querySelector("#field-stats>.text");
+            }
+            if (document.querySelector(".block").dataset.convert == "stats") {
+                inputElement = document.getElementById("field-stats");
+                input = document.querySelector("#field-stats>.text");
+                output = document.querySelector("#field-mp>.text");
+            }
+            let inputMaxChars = parseInt(inputElement.style.getPropertyValue("--char-amount"));
+            if (inputElement.classList.contains("selected")) {
+                let cursorPosition = parseInt(inputElement.style.getPropertyValue("--cursor-position"));
+                if (event.key == "Backspace") {
+                    event.preventDefault();
+                    if (cursorPosition != 0) {
+                        input.innerText = input.innerText.slice(0, cursorPosition - 1) + input.innerText.slice(cursorPosition, input.innerText.length);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition-1);
+                    }
+                }
+                if (event.key == "0") {
+                    event.preventDefault();
+                    if (input.innerText != "" && input.innerText.length < inputMaxChars) {
+                        input.innerText = input.innerText.slice(0, cursorPosition) + "0" + input.innerText.slice(cursorPosition);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                } else if (event.key.match(/\d/)) {
+                    event.preventDefault();
+                    if (input.innerText.length < inputMaxChars) {
+                        input.innerText = input.innerText.slice(0, cursorPosition) + event.key + input.innerText.slice(cursorPosition);
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                }
+                if (event.key == "ArrowLeft") {
+                    event.preventDefault();
+                    if (cursorPosition > 0) {
+                        inputElement.style.setProperty("--cursor-position", cursorPosition-1);
+                    }
+                }
+                if (event.key == "ArrowRight") {
+                    event.preventDefault();
+                    if (cursorPosition < inputMaxChars && cursorPosition < input.innerText.length) {
+                        inputElement.style.setProperty("--cursor-position", cursorPosition+1);
+                    }
+                }
+                if (event.key == "Enter") {
+                    event.preventDefault();
+                    if (document.querySelector(".block").dataset.convert == "mp") {
+                        let statMult = calculateStatsMultiplier(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                        console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)} Magical Power -> ${statMult}x Stats Multiplier`);
+                        output.innerText = statMult.roundTo(2);
+                    }
+                    if (document.querySelector(".block").dataset.convert == "stats") {
+                        let MP = calculateMP(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                        console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)}x Stats Multiplier -> ${MP} Magical Power`);
+                        output.innerText = Math.ceil(MP);
+                        if (Math.ceil(MP) > 1859) {
+                            document.querySelector(".vertical>span").classList.add("enabled");
+                        } else {
+                            document.querySelector(".vertical>span").classList.remove("enabled");
+                        }
+                    }
+                }
+            }
+        });
+        
+        document.querySelector("#mobile-dialog>div").addEventListener("click", () => {
+            if (document.querySelector(".block").dataset.convert == "mp") {
+                input = document.querySelector("#field-mp>.text");
+                output = document.querySelector("#field-stats>.text");
+                let statMult = calculateStatsMultiplier(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)} Magical Power -> ${statMult}x Stats Multiplier`);
+                output.innerText = statMult.roundTo(2);
+            }
+            if (document.querySelector(".block").dataset.convert == "stats") {
+                input = document.querySelector("#field-stats>.text");
+                output = document.querySelector("#field-mp>.text");
+                let MP = calculateMP(parseInt(input.innerText.length != 0 ? input.innerText : 0));
+                console.log(`${parseInt(input.innerText.length != 0 ? input.innerText : 0)}x Stats Multiplier -> ${MP} Magical Power`);
+                output.innerText = Math.ceil(MP);
+                if (Math.ceil(MP) > 1859) {
+                    document.querySelector(".vertical>span").classList.add("enabled");
+                } else {
+                    document.querySelector(".vertical>span").classList.remove("enabled");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
