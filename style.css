@@ -1,0 +1,34 @@
+html {
+    --bg-dark: hsl(0, 0%, 85%);
+    --bg-mid: hsl(0, 0%, 90%);
+    --bg-light: hsl(0, 0%, 95%);
+    --locked: var(--bg-dark);
+    --txt: hsl(0, 0%, 5%);
+    --txt-l: 0.05;
+    --txt-muted: hsl(0, 0%, 35%);
+    --accent-h: 40;
+    --accent: hsl(var(--accent-h), 100%, 50%);
+    --border: hsl(0, 0%, 80%);
+    --border-select: hsl(var(--accent-h), 100%, 50%);
+    --cursor: hsl(0, 0%, 40%);
+}
+html[data-theme="dark"] {
+    --bg-dark: hsl(0, 0%, 5%);
+    --bg-mid: hsl(0, 0%, 10%);
+    --bg-light: hsl(0, 0%, 15%);
+    --locked: var(--bg-mid);
+    --txt: hsl(0, 0%, 95%);
+    --txt-l: 0.95;
+    --txt-muted: hsl(0, 0%, 65%);
+    --accent-h: 30;
+    --accent: hsl(var(--accent-h), 100%, 50%);
+    --border: hsl(0, 0%, 20%);
+    --border-select: hsl(var(--accent-h), 100%, 50%);
+    --cursor: hsl(0, 0%, 60%);
+}
+body {
+    background-color: var(--bg-dark);
+    color: var(--txt);
+    overflow: hidden;
+    font-family: Montserrat, Verdana, Geneva, Tahoma, sans-serif;
+}
