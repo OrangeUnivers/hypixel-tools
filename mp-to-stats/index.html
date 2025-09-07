@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="../mobile.js"></script>
     <script src="../theme.js"></script>
-    <title>Document</title>
+    <title>MP to/from Stats Multiplier</title>
+    <link rel="stylesheet" href="../style.css">
     <style>
         @font-face {
             font-family: Montserrat;
@@ -19,26 +20,10 @@
             font-style: italic;
             font-weight: 100 900;
         }
-        html {
-            --bg-dark: hsl(0, 0%, 85%);
-            --bg-mid: hsl(0, 0%, 90%);
-            --bg-light: hsl(0, 0%, 95%);
-            --txt: hsl(0, 0%, 5%);
-            --txt-muted: hsl(0, 0%, 35%);
-            --accent-h: 40;
-            --accent: hsl(var(--accent-h), 100%, 50%);
-            --border: hsl(0, 0%, 80%);
-            --border-select: hsl(var(--accent-h), 100%, 50%);
-            --cursor: hsl(0, 0%, 40%);
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: var(--txt);
-            margin: 0;
-            overflow: hidden;
-            font-family: Montserrat, Verdana, Geneva, Tahoma, sans-serif;
-        }
         .container {
+            position: fixed;
+            top: 0;
+            left: 0;
             display: flex;
             width: 100vw;
             height: 100vh;
@@ -59,22 +44,30 @@
         }
         .block {
             display: flex;
+            align-items: center;
             gap: 0.8rem;
         }
         .mobile .block {
             flex-direction: column;
             align-items: center;
+            gap: 0.2rem;
         }
-        img {
+        .arrow {
             width: 2.4rem;
+            height: 2.4rem;
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .arrow>img {
+            width: 2.4rem;
+            height: 2.4rem;
             user-select: none;
             -webkit-user-drag: none;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
-            transition: transform 0.3s;
+            filter: brightness(var(--txt-l));
         }
         .mobile #input-arrow {
             display: none;
@@ -93,12 +86,11 @@
             padding-inline: 0.6rem;
             border: 0.15rem var(--border) solid;
             box-shadow: 0 0.6rem 1rem #0002, 0 0.2rem 0.4rem #0004, inset 0 0.2rem 0.4rem #0002, inset 0 0.1rem 0.2rem #0004;
-            transition: border 0.2s;
             width: calc((var(--char-amount) + var(--label-chars)) * 1ch + 0.4rem);
-            transition: width 0.3s;
+            transition: border 0.2s, width 0.3s;
         }
         .mobile .input {
-            width: calc(100vw - 6rem);
+            width: calc(100vw - 10rem);
         }
         .input .text {
             padding-inline: 0.6rem;
@@ -127,8 +119,8 @@
             height: 2.2rem;
             background-color: var(--cursor);
             color: var(--txt-muted);
-            display: none;
-            transition: left 0.08s;
+            opacity: 0;
+            transition: left 0.15s, opacity 0.2s;
         }
         .input.selected {
             border: 0.15rem var(--border-select) solid;
@@ -140,7 +132,7 @@
             -ms-user-select: none;
         }
         .input.selected .cursor {
-            display: block;
+            opacity: 1;
         }
         .block[data-convert="mp"]>#field-mp:not(.selected) {
             cursor: pointer;
@@ -159,7 +151,7 @@
             transition: height 0.3s, margin-top 0.3s;
         }
         .mobile .vertical>span {
-            width: calc(100vw - 6rem);
+            width: calc(100vw - 10rem);
         }
         .vertical>span.enabled {
             height: 1.6rem;
@@ -187,6 +179,7 @@
         #keyboard {
             position: fixed;
             bottom: -25rem;
+            left: 0;
             height: 23rem;
             padding: 1rem;
             display: flex;
@@ -196,20 +189,11 @@
             gap: 0.6rem;
             flex-wrap: wrap;
             background-color: var(--bg-mid);
+            border-radius: 1.4rem 1.4rem 0 0;
             transition: bottom 0.3s;
         }
         .keyboard #keyboard {
-            position: fixed;
-            bottom: -2rem;
-            height: 25rem;
-            padding: 1rem;
-            display: flex;
-            flex-direction: row;
-            justify-content: start;
-            align-content: start;
-            gap: 0.6rem;
-            flex-wrap: wrap;
-            background-color: var(--bg-mid);
+            bottom: 0rem;
         }
         #keyboard>div {
             width: calc((100vw - 3.2rem) / 3);
@@ -225,7 +209,7 @@
             transition: background-color 0.2s;
         }
         #keyboard>div.locked {
-            background-color: var(--bg-dark);
+            background-color: var(--locked);
         }
         #keyboard>.arrows {
             width: calc((100vw - 2.6rem) / 2);
@@ -236,8 +220,37 @@
             padding-inline: 0.2rem;
             box-sizing: border-box;
         }
+        #keyboard>.arrows>img {
+            filter: brightness(var(--txt-l));
+            width: 2rem;
+            user-select: none;
+            -webkit-user-drag: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
         #keyboard>#enter {
             background-color: var(--accent);
+        }
+        #keyboard>#backspace>img {
+            filter: brightness(var(--txt-l));
+            width: 2rem;
+            user-select: none;
+            -webkit-user-drag: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        #keyboard>#enter>img {
+            width: 2.4rem;
+            user-select: none;
+            -webkit-user-drag: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
     </style>
 </head>
@@ -246,8 +259,8 @@
         <div class="vertical">
             <div class="block" data-convert="mp">
                 <div class="input" id="field-mp" style="--cursor-position: 0; --char-amount: 4; --label-chars: 2;"><div class="text"></div><div class="type">MP</div><div class="cursor"></div></div>
-                <img src="../resources/arrow-right-solid-full.svg" alt="" id="input-arrow">
-                <img src="../resources/arrow-down-solid-full.svg" alt="" id="input-arrow-mobile">
+                <div class="arrow" id="input-arrow"><img src="../resources/arrow-right-2.5.svg" alt=""></div>
+                <div class="arrow" id="input-arrow-mobile"><img src="../resources/arrow-down-2.5.svg" alt=""></div>
                 <div class="input" id="field-stats" style="--cursor-position: 0; --char-amount: 6; --label-chars: 5;"><div class="text">0</div><div class="type">Stat*</div><div class="cursor"></div></div>
             </div>
             <span>NOTE: As of June 2025 the max MP is 1859MP.</span>
@@ -257,8 +270,8 @@
         </div>
     </div>
     <div id="keyboard">
-        <div class="arrows locked" id="left"><img src="../resources/arrow-left-solid-full.svg" alt="LEFT"></div>
-        <div class="arrows locked" id="right"><img src="../resources/arrow-right-solid-full.svg" alt="RIGHT"></div>
+        <div class="arrows locked" id="left"><img src="../resources/move-left-2.5.svg" alt="LEFT"></div>
+        <div class="arrows locked" id="right"><img src="../resources/move-right-2.5.svg" alt="RIGHT"></div>
         <div id="1">1</div>
         <div id="2">2</div>
         <div id="3">3</div>
@@ -268,10 +281,11 @@
         <div id="7">7</div>
         <div id="8">8</div>
         <div id="9">9</div>
-        <div id="backspace" class="locked"><img src="../resources/delete.svg" alt="Backspace"></div>
+        <div id="backspace" class="locked"><img src="../resources/delete-2.5.svg" alt="Backspace"></div>
         <div id="zero" class="locked">0</div>
-        <div id="enter"><img src="../resources/corner-down-left.svg" alt="Enter"></div>
+        <div id="enter"><img src="../resources/corner-down-left-3.svg" alt="Enter"></div>
     </div>
+    <div id="back-button"></div>
     <script>
         Number.prototype.roundTo = function(decimals) {
             const factor = 10 ** decimals;
@@ -288,7 +302,7 @@
             return (Math.exp((Stats/29.97) ** (1 / 1.2)) - 1) / 0.0019;
         }
 
-        Array.from(document.querySelectorAll(".block>img")).forEach(image => {
+        Array.from(document.querySelectorAll(".block>.arrow")).forEach(image => {
             image.addEventListener("click", () => {
                 if (document.querySelector(".block").dataset.convert == "mp") {
                     document.querySelector(".block").dataset.convert = "stats";
@@ -386,12 +400,8 @@
                     Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #enter, #zero)")).forEach((key) => {key.classList.remove("locked")});
                 }
                 if (cursorPosition == input.innerText.length) {
-                    console.log(cursorPosition)
-                    console.log(input.innerText.length)
                     document.querySelector("#keyboard>#right").classList.add("locked");
                 } else {
-                    console.log(cursorPosition)
-                    console.log(input.innerText.length)
                     document.querySelector("#keyboard>#right").classList.remove("locked");
                 }
             });
@@ -493,6 +503,26 @@
                             document.querySelector(".vertical>span").classList.remove("enabled");
                         }
                     }
+                }
+                cursorPosition = parseInt(inputElement.style.getPropertyValue("--cursor-position"));
+                if (cursorPosition == 0) {
+                    document.querySelector("#keyboard>#backspace").classList.add("locked");
+                    document.querySelector("#keyboard>#zero").classList.add("locked");
+                    document.querySelector("#keyboard>#left").classList.add("locked");
+                } else {
+                    document.querySelector("#keyboard>#backspace").classList.remove("locked");
+                    document.querySelector("#keyboard>#zero").classList.remove("locked");
+                    document.querySelector("#keyboard>#left").classList.remove("locked");
+                }
+                if (input.innerText.length >= inputMaxChars) {
+                    Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #enter)")).forEach((key) => {key.classList.add("locked")});
+                } else {
+                    Array.from(document.querySelectorAll("#keyboard>div:not(#left, #right, #backspace, #enter, #zero)")).forEach((key) => {key.classList.remove("locked")});
+                }
+                if (cursorPosition == input.innerText.length) {
+                    document.querySelector("#keyboard>#right").classList.add("locked");
+                } else {
+                    document.querySelector("#keyboard>#right").classList.remove("locked");
                 }
             }
         });
